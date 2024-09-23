@@ -1,0 +1,17 @@
+---
+
+- name: cisco info gathering
+  hosts: all
+  gather_facts: False
+
+  tasks:
+   - name: show version
+     ios_command:
+       commands:
+         - show version | incl Version
+         - show interfaces trunk
+     register: sw
+
+   - name: print output
+     debug:
+       var: sw.stdout_lines
