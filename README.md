@@ -1,6 +1,6 @@
-# Ansible Configuration Directory
-
-This directory serves as the base directory for all Ansible configuration settings. Follow the instructions below to deploy the playbook to all devices listed in the `inventory` directory.
+# about this repo
+i use ansible for daily administration jobs in my company and it made it alot easier for me to automate some tasks. so i decieded to share it with everyone.
+hope it help you with your tasks;)
 
 ## How to Run the Playbook
 
