@@ -1,0 +1,6 @@
+---
+
+ansible_user: username
+ansible_password: "{{ mypass }}"
+ansible_network_os: ios
+ansible_connection: network_cli

@@ -1,0 +1,16 @@
+---
+
+- name: save running-config and backup it
+  hosts: sw
+  tasks:
+    - name: save running-config
+      cisco.ios.ios_command:
+        commands:
+          - write
+
+    - name: backup configuration
+      cisco.ios.ios_config:
+        backup: true
+        backup_options:
+          filename: "{{ inventory_hostname }}_running-config.text"
+          dir_path: ./backups
