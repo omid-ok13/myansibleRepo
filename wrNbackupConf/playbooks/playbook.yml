@@ -3,6 +3,10 @@
 - name: save running-config and backup it
   hosts: sw
   tasks:
+    - name:
+      command: date +%y%m%d-%H%M
+      register: myDate
+
     - name: save running-config
       cisco.ios.ios_command:
         commands:
@@ -12,5 +16,5 @@
       cisco.ios.ios_config:
         backup: true
         backup_options:
-          filename: "{{ inventory_hostname }}_running-config.text"
+          filename: "{{ inventory_hostname }}_{{ myDate.stdout}}_running-config.text"
           dir_path: ./backups
