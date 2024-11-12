@@ -17,7 +17,7 @@ list:
 ### configure the ssh
 for older cisco devices (2960-*) you need older algos. please check you devices if they use different connection algorithms and cipher, the following worked for me.
 please share you experince with me to add it to Docs
-just add it to you ~/.ssh/config :
+just add it to you `~/.ssh/config` :
 
 ``` ssh condig
 Host 192.168.1.*
