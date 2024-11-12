@@ -2,19 +2,62 @@
 
 - name: save running-config and backup it
   hosts: sw
-  tasks:
-    - name:
-      command: date +%y%m%d-%H%M
-      register: myDate
+  connection: network_cli
+  gather_facts: no
 
+  tasks:
+    # create backup path, full path is used to prevent mismatch directory path 
+    - name: make backup directory
+      command: mkdir -p "{{backup_path}}/{{ inventory_hostname }}"
+    
+    # save device configurations as startup config
     - name: save running-config
       cisco.ios.ios_command:
         commands:
           - write
-
+    
+    # save configuration files in ./backups
     - name: backup configuration
       cisco.ios.ios_config:
         backup: true
         backup_options:
-          filename: "{{ inventory_hostname }}_{{ myDate.stdout}}_running-config.text"
-          dir_path: ./backups
+          filename: "{{ inventory_hostname }}_running-config.text"
+          dir_path: "{{backup_path}}/{{ inventory_hostname }}"
+
+    # take cdp neighbors informations and save in to variable "cdpinfo"
+    # it would save as json structured values
+    - name: show cdp
+      cisco.ios.ios_command:
+        commands:
+          - show cdp neighbors detail
+      register: cdpinfo
+    
+    # take interface informations and save it to variable "interfaceInfo"
+    # it would save as json structured values
+    - name: show interface status
+      cisco.ios.ios_command:
+        commands:
+          - show interfaces status
+      register: interfaceInfo
+
+    # take version and hardware information of devices and save it ot variable "versionInfo"
+    # it would save as json structured values
+    - name: show version
+      cisco.ios.ios_command:
+        commands:
+          - show version
+      register: versionInfo
+
+    # extract the raw informations, sort and edit variable values and save it to ./backups directory
+    - name: save cdp variable
+      ansible.builtin.copy:
+        content: "{{ cdpinfo.stdout | regex_replace('\\\\n', '\n') }}"
+        dest: "{{backup_path}}/{{ inventory_hostname }}/cdpInfo.txt"
+    - name: save interface variable
+      ansible.builtin.copy:
+        content: "{{ interfaceInfo.stdout | regex_replace('\\\\n', '\n') }}"
+        dest: "{{backup_path}}/{{ inventory_hostname }}/interfaceInfo.txt"
+    - name: save version variable
+      ansible.builtin.copy:
+        content: "{{ versionInfo.stdout | regex_replace('\\\\n', '\n') }}"
+        dest: "{{backup_path}}/{{ inventory_hostname }}/versioninfo.txt"
