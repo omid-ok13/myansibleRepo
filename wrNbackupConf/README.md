@@ -8,13 +8,11 @@ This directory serves as the base directory for all Ansible configuration settin
 list:
 - ansible
 - python3-paramiko
-- mutt
-- sendmail
 - openssh
 - git
 
  ```bash
-  sudo apt install ansible python3-paramiko mutt sendmail git openssh
+  sudo apt install ansible python3-paramiko git openssh
  ```
 ### configure the ssh
 for older cisco devices (2960-*) you need older algos. please check you devices if they use different connection algorithms and cipher, the following worked for me.
