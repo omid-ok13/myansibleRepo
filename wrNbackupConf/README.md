@@ -4,7 +4,7 @@ It was a common problem that the current configuration of my Cisco devices was n
 This directory serves as the base directory for all Ansible configuration settings. Follow the instructions below to deploy the playbook to all devices listed in the `inventory` directory.
 
 ## Prepare enviroment
-### install reqiered software
+### install requiered software
 list:
 - ansible
 - python3-paramiko
