@@ -3,6 +3,38 @@ It was a common problem that the current configuration of my Cisco devices was n
 
 This directory serves as the base directory for all Ansible configuration settings. Follow the instructions below to deploy the playbook to all devices listed in the `inventory` directory.
 
+## Prepare enviroment
+### install reqiered software
+list:
+- ansible
+- python3-paramiko
+- mutt
+- sendmail
+- openssh
+- git
+
+ ```bash
+  sudo apt install ansible python3-paramiko mutt sendmail git openssh
+ ```
+### configure the ssh
+for older cisco devices (2960-*) you need older algos. please check you devices if they use different connection algorithms and cipher, the following worked for me.
+please share you experince with me to add it to Docs
+just add it to you ~/.ssh/config :
+
+``` ssh condig
+Host 192.168.1.*
+        PubkeyAcceptedAlgorithms +ssh-rsa
+        HostkeyAlgorithms +ssh-rsa
+        Ciphers +aes128-cbc
+        KexAlgorithms +diffie-hellman-group1-sha1
+```
+the IP next to `Host` is the range of my ssh address of my devices and the star at the end of it just simply say every address in the network.
+
+### change the needed paths based on you Hierarchie
+files, needed to change:
+- ./ansible.cfg : `inventory` & `log_path` 
+- ./inventory/group_vars/[groupName]/[groupname].yml : `backup_path`
+
 ## How to Run the Playbook
 
 To deploy the configuration using the playbook, make sure you're in this directory and execute the following command:
