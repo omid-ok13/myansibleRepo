@@ -11,9 +11,13 @@ list:
 - openssh
 - git
 
+and if you have ubuntu server newer than 23 please install `pip` to.
+
+
  ```bash
-  sudo apt install ansible python3-paramiko git openssh
+  sudo apt install ansible python3-paramiko git openssh pip
  ```
+
 ### configure the ssh
 for older cisco devices (2960-*) you need older algos. please check you devices if they use different connection algorithms and cipher, the following worked for me.
 please share you experince with me to add it to Docs
@@ -27,6 +31,15 @@ Host 192.168.1.*
         KexAlgorithms +diffie-hellman-group1-sha1
 ```
 the IP next to `Host` is the range of my ssh address of my devices and the star at the end of it just simply say every address in the network.
+
+### install ansible-pylibssh
+ubuntu servers newer than 23 have limitation in installing packages with `pip`. you can manually download library and compile it and add it to you path, or easy way:
+
+just run following command:
+
+```bash
+pip install --user ansible-pylibssh --break-system-packages
+```
 
 ### change the needed paths based on you Hierarchie
 files, needed to change:
