@@ -15,7 +15,7 @@ and if you have ubuntu server newer than 23 please install `pip` to.
 
 
  ```bash
-  sudo apt install ansible python3-paramiko git openssh pip
+  sudo apt install ansible python3-paramiko git openssh-client python3-pip -y
  ```
 
 ### configure the ssh
@@ -51,7 +51,7 @@ files, needed to change:
 To deploy the configuration using the playbook, make sure you're in this directory and execute the following command:
 
 ```bash
-./ansible > ansible-playbook playbook/playbook.yml --ask-vault-pass
+./ansible > ansible-playbook playbooks/playbook.yml --ask-vault-pass
 ```
 When prompted with "vault password," enter your vault password (this is different from your user password).
 
