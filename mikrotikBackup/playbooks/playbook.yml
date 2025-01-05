@@ -1,0 +1,115 @@
+---
+
+- name: save running-config and backup it
+  hosts: sw
+  connection: network_cli
+  gather_facts: no
+
+  tasks:
+    # create backup path, full path is used to prevent mismatch directory path 
+    - name: make backup directory
+      command: mkdir -p "{{backup_path}}/{{ inventory_hostname }}"
+
+    # reseting connection to avoid expired connection from host side
+    - name: reset connection
+      meta: reset_connection
+
+    # save device configurations as startup config
+    - name: save running-config
+      cisco.ios.ios_command:
+        commands:
+          - write
+      retries: 10
+    
+    # save configuration files in ./backups
+    - name: backup configuration
+      cisco.ios.ios_config:
+        backup: true
+        backup_options:
+          filename: "{{ inventory_hostname }}_running-config.text"
+          dir_path: "{{backup_path}}/{{ inventory_hostname }}"
+      retries: 10
+
+    # take cdp neighbors informations and save in to variable "cdpinfo"
+    # it would save as json structured values
+    - name: show cdp
+      cisco.ios.ios_command:
+        commands:
+          - show cdp neighbors detail
+      register: cdpinfo
+      retries: 10
+    
+    # take interface informations and save it to variable "interfaceInfo"
+    # it would save as json structured values
+    - name: show interface status
+      cisco.ios.ios_command:
+        commands:
+          - show interfaces status
+      register: interfaceInfo
+      retries: 10
+
+    # take version and hardware information of devices and save it ot variable "versionInfo"
+    # it would save as json structured values
+    - name: show version
+      cisco.ios.ios_command:
+        commands:
+          - show version
+      register: versionInfo
+      retries: 10
+
+    # run show interface status command and filter err-disabled interfaces
+    # it would also save result in errorinter variable
+    - name: show err-disabled interfaces
+      cisco.ios.ios_command:
+        commands:
+          - show interface status | include err-disabled
+      register: errorinter
+      retries: 10
+
+    # extract the raw informations, sort and edit variable values and save it to ./backups directory
+    - name: save cdp variable
+      ansible.builtin.copy:
+        content: "{{ cdpinfo.stdout | regex_replace('\\\\n', '\n') }}"
+        dest: "{{backup_path}}/{{ inventory_hostname }}/cdpInfo.txt"
+    - name: save interface variable
+      ansible.builtin.copy:
+        content: "{{ interfaceInfo.stdout | regex_replace('\\\\n', '\n') }}"
+        dest: "{{backup_path}}/{{ inventory_hostname }}/interfaceInfo.txt"
+    - name: save version variable
+      ansible.builtin.copy:
+        content: "{{ versionInfo.stdout | regex_replace('\\\\n', '\n') }}"
+        dest: "{{backup_path}}/{{ inventory_hostname }}/versioninfo.txt"
+    - name: save errorinter
+      ansible.builtin.copy:
+        content: "{{ errorinter.stdout | regex_replace('\\\\n', '\n') }}"
+        dest: "{{errdisabled_path}}/{{ inventory_hostname }}"
+      when: errorinter.stdout != [""]
+
+- name: gather mikrotik information
+  hosts: mikrotik
+  connection: network_cli
+  gather_facts: no
+
+  tasks:
+    - name: create directory path
+      command: mkdir -p "{{backup_path}}/{{ inventory_hostname }}"
+
+    - name: export config file
+      community.routeros.command:
+        commands: /export file={{ inventory_hostname }}
+
+    - name: scp export file
+      ansible.builtin.shell: scp {{ ansible_user }}@{{ ansible_host }}:/{{ inventory_hostname }}.rsc "{{backup_path}}/{{ inventory_hostname }}"
+
+    - name: create backupfile
+      community.routeros.command:
+        commands: /system/backup/save name={{ inventory_hostname }} password={{ ansible_ssh_pass }}
+
+    - name: scp backup file
+      ansible.builtin.shell: scp {{ ansible_user }}@{{ ansible_host }}:/{{ inventory_hostname }}.backup "{{backup_path}}/{{ inventory_hostname }}"
+
+    - name: remove backup files from routeros
+      community.routeros.command:
+        commands:
+          - /file/remove {{ inventory_hostname }}.backup
+          - /file/remove {{ inventory_hostname }}.rsc

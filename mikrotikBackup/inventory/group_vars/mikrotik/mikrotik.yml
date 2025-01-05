@@ -1,0 +1,9 @@
+---
+ansible_connection: ansible.netcommon.network_cli
+ansible_network_os: community.routeros.routeros
+ansible_user: "your ssh username"
+ansible_ssh_pass: "your ssh password"
+ansible_command_timeout: 120
+
+backup_path: "./path/to/backupDir"
+

@@ -1,0 +1,21 @@
+#complete me :  ok
+
+---
+- name: collecting interface status
+  hosts: sw
+  connection: network_cli
+  gather_facts: no
+
+  tasks:
+    - name: gather err-disabled interfaces
+      cisco.ios.ios_command:
+        commands:
+          - show interface status | include err-disabled
+      register: errorinter
+      retries: 10
+
+    - name: save errorinter
+      ansible.builtin.copy:
+        content: "{{ errorinter.stdout | regex_replace('\\\\n', '\n') }}"
+        dest: "{{ errdisabled_path }}/{{ inventory_hostname }}"
+      when: errorinter.stdout != [""]

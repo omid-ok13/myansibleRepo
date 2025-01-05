@@ -1,0 +1,30 @@
+---
+
+- name: gather mikrotik information
+  hosts: mikrotik
+  connection: network_cli
+  gather_facts: no
+
+  tasks:
+    - name: create directory path
+      command: mkdir -p "{{backup_path}}/{{ inventory_hostname }}"
+    
+    - name: export config file
+      community.routeros.command:
+        commands: /export file={{ inventory_hostname }}
+
+    - name: scp export file
+      ansible.builtin.shell: sshpass -p "{{ ansible_ssh_pass }}" scp -r {{ ansible_user }}@{{ ansible_host }}:/{{ inventory_hostname }}.rsc "{{backup_path}}/{{ inventory_hostname }}"
+    
+    - name: create backupfile
+      community.routeros.command:
+        commands: /system backup save name={{ inventory_hostname }} password={{ ansible_ssh_pass }}
+    
+    - name: scp backup file
+      ansible.builtin.shell: sshpass -p "{{ ansible_ssh_pass }}" scp -r {{ ansible_user }}@{{ ansible_host }}:/{{ inventory_hostname }}.backup "{{backup_path}}/{{ inventory_hostname }}"
+
+    - name: remove backup files from routeros
+      community.routeros.command:
+        commands:
+          - /file remove {{ inventory_hostname }}.backup
+          - /file remove {{ inventory_hostname }}.rsc
